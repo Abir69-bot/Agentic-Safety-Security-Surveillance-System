@@ -1,0 +1,18 @@
+.venv/
+__pycache__/
+*.py[cod]
+
+frontend/node_modules/
+frontend/dist/
+
+backend/data/uploads/
+backend/data/outputs/
+data/uploads/
+data/outputs/
+backend/.env
+frontend/.env
+*.log
+
+# Keep the runtime model in backend/models; avoid committing duplicate root weights.
+/best_phone_bag_hard_negative_yolo11s.pt
+/yolo11s.pt

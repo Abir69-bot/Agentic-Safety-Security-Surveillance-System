@@ -1,0 +1,105 @@
+[
+  {
+    "file": "/kaggle/working/dangerous_23_cleaned_3oznn06d/train/labels/train_0111.txt",
+    "line": 2,
+    "original": "0 0.6994062499999999 0.641537037037037 0.22321354166666665 0.7169351851851852",
+    "replacement": "0 0.699406 0.641535 0.223214 0.716931",
+    "action": "repaired",
+    "reason": "Bounding box extended outside image boundary"
+  },
+  {
+    "file": "/kaggle/working/dangerous_23_cleaned_3oznn06d/train/labels/train_0112.txt",
+    "line": 2,
+    "original": "0 0.8277552083333333 0.6336018518518518 0.34449479166666663 0.7328055555555555",
+    "replacement": "0 0.827754 0.633600 0.344492 0.732801",
+    "action": "repaired",
+    "reason": "Bounding box extended outside image boundary"
+  },
+  {
+    "file": "/kaggle/working/dangerous_23_cleaned_3oznn06d/train/labels/train_0119.txt",
+    "line": 8,
+    "original": "0 0.019994791666666668 0.1831574074074074 0.03999479166666667 0.15451851851851853",
+    "replacement": "0 0.019996 0.183157 0.039992 0.154519",
+    "action": "repaired",
+    "reason": "Bounding box extended outside image boundary"
+  },
+  {
+    "file": "/kaggle/working/dangerous_23_cleaned_3oznn06d/train/labels/train_0124.txt",
+    "line": 1,
+    "original": "1 0.8441197916666667 0.6218899082568807 0.27157812499999995 0.7562293577981651",
+    "replacement": "1 0.844120 0.621888 0.271578 0.756225",
+    "action": "repaired",
+    "reason": "Bounding box extended outside image boundary"
+  },
+  {
+    "file": "/kaggle/working/dangerous_23_cleaned_3oznn06d/train/labels/train_0139.txt",
+    "line": 1,
+    "original": "1 0.33035937499999996 0.6739444444444445 0.2574427083333333 0.6521203703703703",
+    "replacement": "1 0.330359 0.673942 0.257443 0.652116",
+    "action": "repaired",
+    "reason": "Bounding box extended outside image boundary"
+  },
+  {
+    "file": "/kaggle/working/dangerous_23_cleaned_3oznn06d/train/labels/train_0369.txt",
+    "line": 1,
+    "original": "1 0.5367917448405254 0.6270875 0.6233020637898687 0.7458374999999999",
+    "replacement": "1 0.536792 0.627084 0.623302 0.745831",
+    "action": "repaired",
+    "reason": "Bounding box extended outside image boundary"
+  },
+  {
+    "file": "/kaggle/working/dangerous_23_cleaned_3oznn06d/train/labels/train_0399.txt",
+    "line": 1,
+    "original": "1 0.5357142857142857 0.6683818493150685 0.323125 0.6632448630136986",
+    "replacement": "1 0.535714 0.668380 0.323125 0.663241",
+    "action": "repaired",
+    "reason": "Bounding box extended outside image boundary"
+  },
+  {
+    "file": "/kaggle/working/dangerous_23_cleaned_3oznn06d/train/labels/train_1051.txt",
+    "line": 1,
+    "original": "1 0.5125 0.742592591796875 0.5125 0.237962962890625 0.411979166015625 0.237962962890625 0.411979166015625 0.238888888671875 0.411979166015625 0.742592591796875 0.5125 0.742592591796875",
+    "action": "removed",
+    "reason": "Expected 5 values; found 13"
+  },
+  {
+    "file": "/kaggle/working/dangerous_23_cleaned_3oznn06d/valid/labels/valid_0095.txt",
+    "line": 1,
+    "original": "1 0.7172604166666667 0.5851926605504587 0.21726041666666665 0.8296238532110092",
+    "replacement": "1 0.717260 0.585190 0.217260 0.829619",
+    "action": "repaired",
+    "reason": "Bounding box extended outside image boundary"
+  },
+  {
+    "file": "/kaggle/working/dangerous_23_cleaned_3oznn06d/valid/labels/valid_0100.txt",
+    "line": 1,
+    "original": "1 0.4296875 0.5442734375 0.498265625 0.9114609375",
+    "replacement": "1 0.429688 0.544271 0.498266 0.911457",
+    "action": "repaired",
+    "reason": "Bounding box extended outside image boundary"
+  },
+  {
+    "file": "/kaggle/working/dangerous_23_cleaned_3oznn06d/valid/labels/valid_0127.txt",
+    "line": 1,
+    "original": "0 0.35401875 0.46258095238095237 0.24731874999999998 0.9251714285714285",
+    "replacement": "0 0.354019 0.462583 0.247319 0.925167",
+    "action": "repaired",
+    "reason": "Bounding box extended outside image boundary"
+  },
+  {
+    "file": "/kaggle/working/dangerous_23_cleaned_3oznn06d/test/labels/test_0106.txt",
+    "line": 2,
+    "original": "0 0.697171875 0.6428611111111111 0.232140625 0.714287037037037",
+    "replacement": "0 0.697172 0.642859 0.232141 0.714282",
+    "action": "repaired",
+    "reason": "Bounding box extended outside image boundary"
+  },
+  {
+    "file": "/kaggle/working/dangerous_23_cleaned_3oznn06d/test/labels/test_0123.txt",
+    "line": 1,
+    "original": "0 0.5 0.5189876265466816 0.6105769230769231 0.9620359955005624",
+    "replacement": "0 0.500000 0.518985 0.610577 0.962030",
+    "action": "repaired",
+    "reason": "Bounding box extended outside image boundary"
+  }
+]

@@ -1,0 +1,9 @@
+train: ../train/images
+val: ../valid/images
+test: ../test/images
+
+nc: 2
+
+names:
+  0: normal_person
+  1: potentially_dangerous_person
