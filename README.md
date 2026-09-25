@@ -1,26 +1,94 @@
-# Perimeter Watch
+# Agentic Safety Security Surveillance System
 
-A FastAPI + React person-detection module for the larger Agentic Safety & Security Surveillance System. It runs YOLO11s with ByteTrack, returns an annotated video and summary, and can email the owner when dangerous-person events are found. The processor/job-store boundaries leave room for warehouse-safety and DCSASS anomaly models later.
+A full-stack AI surveillance prototype for reviewing video footage, tracking people across frames, and flagging potentially dangerous-person events for human review.
 
-## Run locally
+This project combines a Python FastAPI backend, a YOLO11-based detection model, and a React monitoring dashboard to create a practical safety and perimeter monitoring workflow.
 
-Backend:
+## Overview
+
+The system is designed to:
+
+- receive uploaded video files from a web client
+- analyze frames with a trained YOLO11 model
+- track people across the clip with ByteTrack
+- mark normal vs. potentially dangerous detections
+- generate an annotated output video
+- surface suspicious windows for operator review
+- optionally send alert emails when danger events are found
+
+This is a review-oriented safety system, not an autonomous decision-maker. The model highlights possible risk and keeps a human in the loop.
+
+## Key Features
+
+- FastAPI backend for video upload and status polling
+- React frontend dashboard for operations and review
+- YOLO11s model for person-context detection
+- ByteTrack-based multi-object tracking
+- Alert event grouping over time
+- Output video export with annotated boxes and labels
+- Email notification support for dangerous event summaries
+- Local browser-based history and results review
+
+## Architecture
+
+- Backend: `backend/`
+  - `app/main.py` exposes the API
+  - `app/processor.py` runs video analysis and model inference
+  - `app/config.py` stores environment configuration
+  - `app/email_alerts.py` sends alert emails
+- Frontend: `frontend/`
+  - React + Vite dashboard for uploading videos and viewing results
+- Model: `backend/models/best_phone_bag_hard_negative_yolo11s.pt`
+
+## Project Structure
+
+```text
+.
+├── backend/
+│   ├── app/
+│   ├── data/
+│   ├── models/
+│   └── requirements.txt
+├── frontend/
+│   ├── src/
+│   ├── package.json
+│   └── vite.config.js
+├── README.md
+├── data/
+├── index.html
+└── LICENSE
+```
+
+## Quick Start
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/Abir69-bot/Agentic-Safety-Security-Surveillance-System.git
+cd Agentic-Safety-Security-Surveillance-System
+```
+
+### 2. Start the backend
 
 ```powershell
 cd backend
 python -m venv .venv
 .\.venv\Scripts\Activate.ps1
 pip install -r requirements.txt
+```
+
+Set the model path if needed and start the API:
+
+```powershell
 $env:MODEL_PATH="models\best_phone_bag_hard_negative_yolo11s.pt"
-$env:GMAIL_ADDRESS="owner@gmail.com"
-$env:GMAIL_APP_PASSWORD="your-google-app-password"
-$env:ALERT_RECIPIENT="owner@gmail.com"
 uvicorn app.main:app --reload --port 8000
 ```
 
-Use a Gmail App Password created under Google 2-Step Verification, never the normal Gmail password. Alerts are sent only when dangerous-person event windows exist; mail failure does not fail the video job. Leave the Gmail variables unset to disable email.
+The API runs on:
 
-Frontend, in a second terminal:
+- http://localhost:8000
+
+### 3. Start the frontend
 
 ```powershell
 cd frontend
@@ -29,10 +97,68 @@ $env:VITE_API_BASE_URL="http://localhost:8000"
 npm run dev
 ```
 
-Open `http://localhost:5173`.
+Then open:
 
-## Configuration and limitations
+- http://localhost:5173
 
-`MODEL_PATH` defaults to the included workspace weight. `CONFIDENCE_THRESHOLD` defaults to `0.30`; `DANGEROUS_CONFIDENCE_THRESHOLD` defaults to `0.55` to reduce false dangerous-person alerts; `IOU_THRESHOLD` and `ALERT_GAP_SECONDS` default to `0.50` and `1.5`. `FRAME_SKIP=1` analyzes every frame; `FRAME_SKIP=2` or `3` can speed up long clips by reusing recent boxes, trading some tracking freshness for speed. Uploads are limited to 500MB and support mp4, mov, avi, mkv, and webm. The model loads once when FastAPI starts, and the backend logs CPU/GPU, model-load, inference, and video-write timings.
+## Supported Uploads
 
-The development job store is in memory and resets on restart. The model loads per job to isolate tracker state, so overlapping jobs use more memory. CPU inference may be slow. `mp4v` output playback depends on browser codec support; H.264 transcoding may be needed for some browsers.
+The backend accepts these video types:
+
+- MP4
+- MOV
+- AVI
+- MKV
+- WEBM
+
+Maximum upload size is 500MB.
+
+## Configuration
+
+The backend reads settings from environment variables and defaults from `backend/app/config.py`.
+
+Example:
+
+```powershell
+$env:MODEL_PATH="models\best_phone_bag_hard_negative_yolo11s.pt"
+$env:CONFIDENCE_THRESHOLD="0.30"
+$env:DANGEROUS_CONFIDENCE_THRESHOLD="0.55"
+$env:IOU_THRESHOLD="0.50"
+$env:ALERT_GAP_SECONDS="1.5"
+$env:FRAME_SKIP="1"
+```
+
+## Gmail Alerts
+
+For email notifications, configure the Gmail account with an app password:
+
+```powershell
+$env:GMAIL_ADDRESS="owner@gmail.com"
+$env:GMAIL_APP_PASSWORD="xxxx xxxx xxxx xxxx"
+$env:ALERT_RECIPIENT="owner@gmail.com"
+```
+
+> Do not commit real credentials. Use environment variables or a local `.env` file that is excluded from version control.
+
+## Responsible Use
+
+This project is intended for lawful monitoring and human-reviewed safety workflows only.
+
+Please use it responsibly:
+
+- keep a human reviewer in the loop
+- avoid autonomous punitive action
+- validate performance in real deployment settings
+- protect privacy and access control
+- treat model outputs as decision-support signals, not proof of wrongdoing
+
+## Notes
+
+This repository is a prototype for AI-assisted perimeter and safety monitoring. It is meant to support operations teams, investigators, and security reviewers with evidence-based alerts instead of fully automated enforcement.
+
+## GitHub
+
+Repository:
+
+https://github.com/Abir69-bot/Agentic-Safety-Security-Surveillance-System
+
