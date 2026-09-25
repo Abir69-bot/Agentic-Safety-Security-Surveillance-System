@@ -1,22 +1,39 @@
-<p align="center">
-  <img src="./assets/project-banner.svg" width="100%" alt="YOLO11 dangerous-person detection research project banner" />
-</p>
+# Agentic Safety & Security Surveillance System
 
-<p align="center">
-  <a href="https://github.com/Nambekai/dangerous-person-detection-yolo11/actions/workflows/quality.yml"><img src="https://github.com/Nambekai/dangerous-person-detection-yolo11/actions/workflows/quality.yml/badge.svg" alt="Repository quality status" /></a>
-  <img src="https://img.shields.io/badge/status-research%20prototype-0B1F33" alt="Research prototype status" />
-  <img src="https://img.shields.io/badge/model-YOLO11s-8C1D40" alt="Selected model YOLO11s" />
-  <img src="https://img.shields.io/badge/dataset-3%2C140%20images-30475E" alt="Dataset with 3,140 images" />
-  <img src="https://img.shields.io/badge/license-AGPL--3.0-A67C00" alt="AGPL-3.0 license" />
-</p>
+A real-world AI-assisted surveillance prototype built for detecting and reviewing potentially dangerous-person activity in video footage.
 
-## Overview
+This repository combines a Python backend, a YOLO11-based detector, and a React monitoring interface into one system that can upload video, run inference, track people across frames, and flag suspicious events for human review.
 
-This graduation-thesis repository studies YOLO11-based detection of people who appear with a potentially dangerous object in public-area imagery. The detector localizes the person, not the object alone, using two contextual classes: `normal_person` and `potentially_dangerous_person`.
+## What this project actually does
 
-The study compared YOLO11n, YOLO11s, YOLO11s with a recorded preprocessing configuration, YOLO11m, and YOLO11l. YOLO11s provided the strongest overall balance and was selected for the demonstration.
+This project is not a fully autonomous surveillance system. It is a review-support application designed to help operators:
 
-> This is an academic research prototype, not an autonomous security decision system. A prediction is a prompt for human review. It does not establish identity, intent, guilt, or future behavior.
+- upload security or perimeter footage
+- detect people with a trained YOLO11s model
+- track each person across the video using ByteTrack
+- classify detections into normal vs. potentially dangerous person events
+- generate an annotated output video with bounding boxes and labels
+- summarize alert time windows for review
+- send email alerts when risky events are detected
+
+The main logic is implemented in the backend pipeline under `backend/app/`, while the front-end dashboard sits in `frontend/src/`.
+
+## Real system analysis
+
+From the codebase, the system is structured around a practical monitoring workflow:
+
+1. A user uploads a video through the FastAPI API.
+2. The backend saves the file and starts a background processing job.
+3. The model loads once at startup using `YOLO(str(model_path))`.
+4. Each frame is processed with `model.track(...)` using ByteTrack.
+5. Detections are filtered and counted by class:
+   - `normal_person`
+   - `potentially_dangerous_person`
+6. Dangerous detections are marked as `alert_events` and grouped into time windows.
+7. The annotated output video is generated and stored in `data/outputs`.
+8. The frontend polls `/status/{job_id}` to display progress and then shows the processed result.
+
+This means the app is best understood as an AI-assisted alerting and evidence-review tool rather than a direct enforcement system.
 
 ## Key Results
 
@@ -29,17 +46,11 @@ The study compared YOLO11n, YOLO11s, YOLO11s with a recorded preprocessing confi
 | mAP50-95 | 0.64 |
 | Test images | 314 |
 
-All reported measures come from the held-out test set described in the thesis. The repository does not claim independent replication beyond the supplied artifacts.
-
-<p align="center">
-  <img src="./assets/system-workflow.svg" width="100%" alt="Four-stage research workflow covering data, training, evaluation, and review" />
-</p>
-
-<p align="center"><sub>Figure 1. Research workflow used to prepare data, compare models, evaluate results, and review outputs.</sub></p>
+These values reflect the reported held-out evaluation for the selected YOLO11s configuration in the project workflow.
 
 ## Dataset
 
-The final YOLO-format dataset contains 3,140 images and 10,595 labeled person instances.
+The final project dataset includes labeled person instances for normal and potentially dangerous-person classes.
 
 | Split | Images | Normal-person instances | Potentially-dangerous-person instances | Total instances |
 | --- | ---: | ---: | ---: | ---: |
@@ -48,145 +59,139 @@ The final YOLO-format dataset contains 3,140 images and 10,595 labeled person in
 | Test | 314 | 539 | 264 | 803 |
 | Total | 3,140 | 7,677 | 2,918 | 10,595 |
 
-Dataset access:
+This repository is built around a YOLO-format dataset designed for person-context safety review.
 
-- [Google Drive dataset folder](https://drive.google.com/drive/folders/1m-BzFvQwwWzvTCXApwJftQU3tRt0CmCC?usp=drive_link)
-- [Versioned GitHub release](https://github.com/Nambekai/dangerous-person-detection-yolo11/releases/tag/v1.0.0)
-- [Dataset card](./docs/DATASET_CARD.md)
+## Architecture
 
-The embedded Roboflow export notice identifies the dataset as CC BY 4.0. Review the dataset card and source notices before reuse.
+This project follows a job-based surveillance pipeline with a human-review layer.
 
-## Model Comparison
+### End-to-end system flow
 
-<p align="center">
-  <img src="./assets/model-comparison.svg" width="100%" alt="Comparison of precision, recall, F1, mAP50, and mAP50-95 across five YOLO11 variants" />
-</p>
+1. [frontend/src/App.jsx](frontend/src/App.jsx) provides the operator dashboard, upload flow, result viewer, history, and analytics pages.
+2. [frontend/src/api.js](frontend/src/api.js) calls the FastAPI backend endpoints for upload, status polling, and output retrieval.
+3. [backend/app/main.py](backend/app/main.py) validates the uploaded video, saves it under the upload directory, creates a unique job ID, and starts a background processing task.
+4. [backend/app/job_store.py](backend/app/job_store.py) keeps track of each job's progress, frame counts, and output metadata in memory.
+5. [backend/app/processor.py](backend/app/processor.py) loads the trained YOLO11s model, applies ByteTrack tracking, classifies `normal_person` and `potentially_dangerous_person`, merges alert frames into time windows, and writes the annotated MP4 output.
+6. [backend/app/config.py](backend/app/config.py) provides the thresholds, model path, upload limits, CORS settings, and optional email configuration used by the processing pipeline.
+7. [backend/app/models.py](backend/app/models.py) defines the API contract for upload responses, job status, alert events, and summaries.
+8. [backend/app/email_alerts.py](backend/app/email_alerts.py) optionally sends a warning email when dangerous-person alerts are detected.
+9. [frontend/src/App.jsx](frontend/src/App.jsx) polls `/status/{job_id}` until the job is complete, then renders the processed output video and alert summary for human review.
 
-<p align="center"><sub>Figure 2. Held-out test-set comparison. YOLO11s led the aggregate F1, mAP50, and mAP50-95 measures.</sub></p>
+### Component responsibilities
 
-<details>
-<summary><strong>Training evidence</strong></summary>
+#### Frontend
 
-<p align="center">
-  <img src="./assets/results/yolo11s-training-curves.png" width="96%" alt="YOLO11s training and validation curves" />
-</p>
+- [frontend/src/App.jsx](frontend/src/App.jsx) – main UI and operational dashboard
+- [frontend/src/api.js](frontend/src/api.js) – backend communication layer
+- [frontend/src/components/three/OrbitScene.jsx](frontend/src/components/three/OrbitScene.jsx) – visual shell for the dashboard view
 
-<p align="center"><sub>Figure 3. YOLO11s mAP and loss curves over the recorded 132 training epochs.</sub></p>
+#### Backend
 
-<p align="center">
-  <img src="./assets/results/yolo11s-training-results.png" width="96%" alt="YOLO11s detailed training results" />
-</p>
+- [backend/app/main.py](backend/app/main.py) – API entry point and job orchestration
+- [backend/app/processor.py](backend/app/processor.py) – YOLO detection, tracking, annotation, and video export
+- [backend/app/config.py](backend/app/config.py) – runtime configuration and model settings
+- [backend/app/job_store.py](backend/app/job_store.py) – in-memory job state manager
+- [backend/app/models.py](backend/app/models.py) – typed data models for the backend API
+- [backend/app/email_alerts.py](backend/app/email_alerts.py) – optional notification layer for critical events
 
-<p align="center"><sub>Figure 4. Detailed YOLO11s training, validation, precision, recall, and mAP traces.</sub></p>
+This system is designed as an AI-assisted review platform rather than a fully autonomous enforcement engine.
 
-</details>
+## Model behavior
 
-## Prediction Gallery
+The project uses a YOLO11s model file located at:
 
-The following images are preserved as original model outputs for auditability. Their embedded class identifiers retain the original training labels; all repository captions and explanatory text are in US English.
+- `backend/models/best_phone_bag_hard_negative_yolo11s.pt`
 
-<table>
-  <tr>
-    <td width="50%" align="center"><img src="./assets/predictions/test-0194-public-area.jpg" width="100%" alt="Crowded public-area test prediction" /><br /><sub>Figure 5. Crowded public-area test frame with multiple localized people.</sub></td>
-    <td width="50%" align="center"><img src="./assets/predictions/test-0247-hard-negative.jpg" width="100%" alt="Hard-negative test prediction" /><br /><sub>Figure 6. Hard-negative example classified as a normal person.</sub></td>
-  </tr>
-  <tr>
-    <td width="50%" align="center"><img src="./assets/predictions/test-0124.jpg" width="100%" alt="Low-light corridor test prediction" /><br /><sub>Figure 7. Low-light corridor example with a potentially dangerous person.</sub></td>
-    <td width="50%" align="center"><img src="./assets/predictions/test-0243.jpg" width="100%" alt="Public-building corridor prediction" /><br /><sub>Figure 8. Public-building corridor example with two localized people.</sub></td>
-  </tr>
-  <tr>
-    <td width="50%" align="center"><img src="./assets/predictions/street-scene.jpg" width="100%" alt="Street-scene prediction" /><br /><sub>Figure 9. External street scene used for qualitative review.</sub></td>
-    <td width="50%" align="center"><img src="./assets/predictions/public-area-scene.jpg" width="100%" alt="Public-area prediction" /><br /><sub>Figure 10. External public-area scene used for qualitative review.</sub></td>
-  </tr>
-</table>
+In the backend config, the default model path is:
 
-<details>
-<summary><strong>Additional test-set galleries</strong></summary>
+- `models/best_phone_bag_hard_negative_yolo11s.pt`
 
-<p align="center"><img src="./assets/results/test-prediction-gallery-a.png" width="100%" alt="First extended test-prediction gallery" /></p>
-<p align="center"><sub>Figure 11. Extended test-set review, group A.</sub></p>
+The model is configured with:
 
-<p align="center"><img src="./assets/results/test-prediction-gallery-b.png" width="100%" alt="Second extended test-prediction gallery" /></p>
-<p align="center"><sub>Figure 12. Extended test-set review, group B.</sub></p>
+- confidence threshold: `0.30`
+- dangerous threshold: `0.55`
+- IoU threshold: `0.50`
+- alert gap: `1.5` seconds
+- frame skip: `1` by default
 
-<p align="center"><img src="./assets/results/test-prediction-gallery-c.png" width="100%" alt="Third extended test-prediction gallery" /></p>
-<p align="center"><sub>Figure 13. Extended test-set review, group C.</sub></p>
+The processor code uses:
 
-</details>
+- `CLASS_NAMES = {0: "normal_person", 1: "potentially_dangerous_person"}`
+- `DANGEROUS_CLASS = 1`
 
-## Quick Start
+This confirms the project is focused on a person-centric safety alerting model rather than general object detection.
 
-### 1. Clone and prepare Python
+## Features in this repository
 
-```bash
-git clone https://github.com/Nambekai/dangerous-person-detection-yolo11.git
-cd dangerous-person-detection-yolo11
+- Video upload endpoint using FastAPI
+- Job-based processing for each uploaded clip
+- Progress tracking and result polling in the frontend
+- Output video generation with boxes and labels burned into frames
+- People tracking across frames
+- Unique person counting and alert event windows
+- Optional Gmail notification support
+- Local browser history for completed analyses
+
+## Limitations and honest assessment
+
+The repository is a prototype and has real operational limits:
+
+- the job store is in-memory and resets on restart
+- CPU inference can be slow when CUDA is unavailable
+- live camera streaming is not a complete real-time inference endpoint yet
+- image detection is intentionally limited in the current UI
+- alerting is a review signal, not a legal or factual determination
+- output encoding depends on browser and codec support
+
+This is important context: the app is a decision-support prototype, not a standalone autonomous security authority.
+
+## Repository
+
+GitHub: https://github.com/Abir69-bot/Agentic-Safety-Security-Surveillance-System
+
+## Local setup
+
+### Backend
+
+```powershell
+cd backend
 python -m venv .venv
-python -m pip install --upgrade pip
-python -m pip install -r requirements.txt
+.\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+$env:MODEL_PATH="models\best_phone_bag_hard_negative_yolo11s.pt"
+uvicorn app.main:app --reload --port 8000
 ```
 
-Activate `.venv` with the command appropriate to your operating system before installing dependencies.
+### Frontend
 
-### 2. Download a model
-
-Download `weights-YOLO11s.zip` from the [v1.0.0 release](https://github.com/Nambekai/dangerous-person-detection-yolo11/releases/tag/v1.0.0), extract it, and locate `best.pt`.
-
-### 3. Run inference
-
-```bash
-python scripts/inference.py \
-  --model path/to/best.pt \
-  --source path/to/image-or-video \
-  --confidence 0.35
+```powershell
+cd frontend
+npm install
+$env:VITE_API_BASE_URL="http://localhost:8000"
+npm run dev
 ```
 
-Outputs are written under `runs/predict/`. The inference script changes displayed class names to English without modifying the trained class indices.
+Open:
 
-### 4. Reconstruct a training run
+- http://localhost:5173
 
-Extract the dataset so that `data/dataset/train`, `data/dataset/valid`, and `data/dataset/test` exist, then run:
+## Responsible use
 
-```bash
-python scripts/train.py --variant yolo11s --data config/data.yaml
-```
+This project should be used only in lawful, privacy-aware, human-reviewed workflows.
 
-The training utility reconstructs settings recorded in the thesis. The original notebooks, package lock file, random seed, and automatically selected optimizer details were not present in the supplied folder, so exact numerical reproduction is not guaranteed. See the [reproducibility guide](./docs/REPRODUCIBILITY.md).
+The code and UI clearly communicate that outputs are not proof of wrongdoing. They are alerts for operator review.
 
-## Recorded Training Configuration
+Use it responsibly by:
 
-| Variant | Base model | Epochs set | Epochs completed | Patience | Batch | Image size |
-| --- | --- | ---: | ---: | ---: | ---: | ---: |
-| YOLO11n | `yolo11n.pt` | 150 | 109 | 35 | 8 | 832 |
-| YOLO11s | `yolo11s.pt` | 150 | 132 | 35 | 8 | 832 |
-| YOLO11s preprocessing variant | `yolo11s.pt` | 150 | 150 | 35 | 8 | 832 |
-| YOLO11m | `yolo11m.pt` | 150 | 150 | 40 | 8 | 832 |
-| YOLO11l | `yolo11l.pt` | 150 | 150 | 40 | 8 | 832 |
+- keeping a human decision-maker in the loop
+- securing footage and access
+- validating performance in the real environment
+- avoiding automated punitive action
+- treating false positives and false negatives as operational risks
 
-The recorded shared settings were optimizer `auto` and an NVIDIA Tesla T4 GPU. The preprocessing variant settings are preserved in [`config/experiments.yaml`](./config/experiments.yaml).
+## Final project summary
 
-## Repository Map
+This project is an AI-powered perimeter and safety monitoring prototype designed to support operators in reviewing footage for potentially dangerous activity. Its real value is in combining detection, tracking, annotation, alert grouping, and human-review workflow into a single end-to-end system.
 
-```text
-.
-|-- assets/                 Figures and prediction examples
-|-- config/                 Dataset and experiment configuration
-|-- docs/                   Dataset card, model card, thesis, slides, and guides
-|-- scripts/                Training, inference, and quality-validation utilities
-|-- tests/                  Lightweight repository tests
-|-- CITATION.cff            Machine-readable citation metadata
-|-- LICENSE                 AGPL-3.0 license
-`-- README.md               Project overview and entry point
-```
-
-
-The thesis and defense deck are preserved in their original Vietnamese submission language. All repository-facing documentation, labels, captions, configuration, and guidance are provided in United States English. The deck contains the 26-slide defense sequence followed by 14 original backup slides.
-
-## Responsible Use
-
-- Keep a trained human reviewer in the decision loop.
-- Do not use the model for identity recognition, demographic inference, predictive policing, or automated punitive action.
-- Validate performance in the actual deployment environment and document subgroup, lighting, distance, crowd-density, and camera-angle effects.
-- Establish lawful data governance, retention, access control, incident review, and an appeal process before any field use.
-- Treat false negatives as a safety risk and false positives as a potential harm to affected people.
+It is practical, usable, and explainable as a decision-support tool, while still clearly emphasizing that it is not a final authority and must be used responsibly.
 
